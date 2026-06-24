@@ -10,7 +10,7 @@ from widgets.sidebar import Sidebar
 from widgets.header_bar import HeaderBar
 from widgets.footer_bar import FooterBar
 from widgets.content_container import ContentContainer
-from screens.home_screen import HomeScreen
+from screens.overview_screen import OverviewScreen
 from screens.alarm_screen import AlarmScreen
 from screens.monitoring_screen import MonitoringScreen
 from screens.maintenance_screen import MaintenanceScreen
@@ -49,7 +49,7 @@ class MainWindow(QMainWindow):
         self.state_manager.plant_state.system_state_changed.connect(self._update_header_status)
         
         # Initialize first screen
-        self.navigation.navigate_to("home")
+        self._on_screen_changed("home")
 
     def setup_ui(self):
         """Baut die UI auf."""
@@ -89,7 +89,7 @@ class MainWindow(QMainWindow):
 
     def _register_screens(self):
         """Registriert alle verfügbaren Screens."""
-        self.navigation.register_screen("home", HomeScreen)
+        self.navigation.register_screen("home", OverviewScreen)
         self.navigation.register_screen("alarms", AlarmScreen)
         self.navigation.register_screen("monitoring", MonitoringScreen)
         self.navigation.register_screen("maintenance", MaintenanceScreen)

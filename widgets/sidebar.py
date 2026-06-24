@@ -73,7 +73,7 @@ class Sidebar(QWidget):
         icon_color = "#f5f5f5"
 
         menu_items = [
-            ("home", qta.icon("mdi.home-outline", color=icon_color), "Startseite"),
+            ("home", qta.icon("mdi.home-outline", color=icon_color), "Übersicht"),
             ("alarms", qta.icon("mdi.bell-outline", color=icon_color), "Alarme"),
             ("monitoring", qta.icon("mdi.chart-line", color=icon_color), "Monitoring"),
             ("maintenance", qta.icon("mdi.wrench-outline", color=icon_color), "Wartung"),
