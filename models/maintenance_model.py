@@ -60,10 +60,10 @@ class MaintenanceModel(QObject):
     def _init_default_tasks(self):
         """Initialisiert Standard-Wartungsaufgaben."""
         default_tasks = [
-            ("filter_change", "Filterwechsel", 90),
-            ("pump_check", "Pumpenüberprüfung", 30),
-            ("system_calibration", "Systemkalibrierung", 180),
-            ("oil_change", "Ölwechsel", 365),
+            ("filter_change", "Filter Replacement", 90),
+            ("pump_check", "Pump Inspection", 30),
+            ("system_calibration", "System Calibration", 180),
+            ("oil_change", "Oil Change", 365),
         ]
         
         for task_id, name, days in default_tasks:

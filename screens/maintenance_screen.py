@@ -22,7 +22,7 @@ class MaintenanceScreen(BaseScreen):
     def setup_ui(self):
         """Baut die UI auf."""
         # Titel
-        title = QLabel("Wartungsverwaltung")
+        title = QLabel("Maintenance Management")
         title_font = QFont()
         title_font.setPointSize(config.FONT_SIZE_TITLE + 2)
         title_font.setBold(True)
@@ -35,7 +35,7 @@ class MaintenanceScreen(BaseScreen):
         # === Maintenance Table ===
         self.maintenance_table = QTableWidget()
         self.maintenance_table.setColumnCount(5)
-        self.maintenance_table.setHorizontalHeaderLabels(["Aufgabe", "Status", "Nächst fällig", "Intervall", "Aktion"])
+        self.maintenance_table.setHorizontalHeaderLabels(["Task", "Status", "Next Due", "Interval", "Action"])
         self.maintenance_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.maintenance_table.setStyleSheet(f"""
             QTableWidget {{
@@ -76,12 +76,12 @@ class MaintenanceScreen(BaseScreen):
             self.maintenance_table.setItem(row, 0, QTableWidgetItem(task.name))
             self.maintenance_table.setItem(row, 1, QTableWidgetItem(f"{status_color} {status.value}"))
             self.maintenance_table.setItem(row, 2, QTableWidgetItem(task.next_due.strftime("%d.%m.%Y")))
-            self.maintenance_table.setItem(row, 3, QTableWidgetItem(f"{task.interval_days} Tage"))
+            self.maintenance_table.setItem(row, 3, QTableWidgetItem(f"{task.interval_days} days"))
             
             # Action Button
             btn_layout = QHBoxLayout()
             btn_layout.setContentsMargins(0, 0, 0, 0)
-            btn = QPushButton("✓ Abgeschlossen")
+            btn = QPushButton("✓ Complete")
             btn.setMaximumWidth(130)
             btn.clicked.connect(lambda checked, tid=task.task_id: self._complete_task(tid))
             btn.setStyleSheet(f"""

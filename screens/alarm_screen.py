@@ -69,7 +69,7 @@ class AlarmScreen(BaseScreen):
         
         # Tabs
         self.tab_buttons = {}
-        for tab_id, tab_name in [("active", "Aktive Alarme"), ("history", "Historie"), ("stats", "Alarmstatistik")]:
+        for tab_id, tab_name in [("active", "Active Alarms"), ("history", "History"), ("stats", "Alarm Statistics")]:
             btn = QPushButton(tab_name)
             btn.setFixedHeight(40)
             btn.setCursor(Qt.PointingHandCursor)
@@ -132,28 +132,28 @@ class AlarmScreen(BaseScreen):
         
         # Severity Dropdown
         self.severity_combo = QComboBox()
-        self.severity_combo.addItems(["Alle Severity", "Kritisch", "Hoch", "Mittel", "Niedrig"])
+        self.severity_combo.addItems(["All Severities", "Critical", "High", "Medium", "Low"])
         self.severity_combo.setFixedSize(150, 40)
         self.severity_combo.setStyleSheet(self._combobox_style())
         layout.addWidget(self.severity_combo)
         
         # Status Dropdown
         self.status_combo = QComboBox()
-        self.status_combo.addItems(["Alle Status", "Aktiv", "Quittiert"])
+        self.status_combo.addItems(["All Statuses", "Active", "Acknowledged"])
         self.status_combo.setFixedSize(150, 40)
         self.status_combo.setStyleSheet(self._combobox_style())
         layout.addWidget(self.status_combo)
         
         # Bereich Dropdown
         self.area_combo = QComboBox()
-        self.area_combo.addItems(["Alle Bereiche", "System", "Pumpe", "Sensor"])
+        self.area_combo.addItems(["All Areas", "System", "Pump", "Sensor"])
         self.area_combo.setFixedSize(150, 40)
         self.area_combo.setStyleSheet(self._combobox_style())
         layout.addWidget(self.area_combo)
         
         # Suchfeld
         self.search_field = QLineEdit()
-        self.search_field.setPlaceholderText("🔍 Suche...")
+        self.search_field.setPlaceholderText("🔍 Search...")
         self.search_field.setFixedSize(200, 40)
         self.search_field.setStyleSheet("""
             QLineEdit {
@@ -168,7 +168,7 @@ class AlarmScreen(BaseScreen):
         layout.addStretch()
         
         # Quittieren Button
-        ack_btn = QPushButton("✓ Quittieren")
+        ack_btn = QPushButton("✓ Acknowledge")
         ack_btn.setFixedSize(100, 40)
         ack_btn.setCursor(Qt.PointingHandCursor)
         ack_btn.clicked.connect(self._acknowledge_selected)
@@ -176,7 +176,7 @@ class AlarmScreen(BaseScreen):
         layout.addWidget(ack_btn)
         
         # Alle quittieren Button
-        ack_all_btn = QPushButton("✓✓ Alle quittieren")
+        ack_all_btn = QPushButton("✓✓ Acknowledge all")
         ack_all_btn.setFixedSize(120, 40)
         ack_all_btn.setCursor(Qt.PointingHandCursor)
         ack_all_btn.clicked.connect(self._acknowledge_all)
@@ -203,7 +203,7 @@ class AlarmScreen(BaseScreen):
         self.alarm_table = QTableWidget()
         self.alarm_table.setColumnCount(8)
         self.alarm_table.setHorizontalHeaderLabels([
-            "Icon", "Zeit", "Nachricht", "ID", "Beschreibung", "Severity", "Status", "Bereich"
+            "Icon", "Time", "Message", "ID", "Description", "Severity", "Status", "Area"
         ])
         self.alarm_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.alarm_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -269,7 +269,7 @@ class AlarmScreen(BaseScreen):
         left_layout.setSpacing(10)
         
         # Titel
-        details_title = QLabel("Alarmdetails")
+        details_title = QLabel("Alarm Details")
         details_font = QFont()
         details_font.setPointSize(12)
         details_font.setBold(True)
@@ -294,7 +294,7 @@ class AlarmScreen(BaseScreen):
             }
         """)
         
-        self.detail_display = QLabel("Kein Alarm ausgewählt")
+        self.detail_display = QLabel("No alarm selected")
         self.detail_display.setWordWrap(True)
         self.detail_display.setStyleSheet(f"color: {config.TEXT_SECONDARY}; padding: 5px;")
         detail_scroll.setWidget(self.detail_display)
@@ -315,7 +315,7 @@ class AlarmScreen(BaseScreen):
         right_layout = QVBoxLayout()
         right_layout.setAlignment(Qt.AlignCenter)
         
-        placeholder_text = QLabel("Anlagenvisualisierung wird später integriert")
+        placeholder_text = QLabel("Plant visualization will be integrated later")
         placeholder_text.setAlignment(Qt.AlignCenter)
         placeholder_text.setStyleSheet(f"color: {config.TEXT_SECONDARY}; font-size: 12pt;")
         right_layout.addWidget(placeholder_text)
@@ -341,22 +341,22 @@ class AlarmScreen(BaseScreen):
         layout.setSpacing(10)
         
         # Linke Buttons
-        hide_btn = QPushButton("👁 Details ausblenden")
+        hide_btn = QPushButton("👁 Hide details")
         hide_btn.setFixedSize(130, 40)
         hide_btn.setStyleSheet(self._button_style("light"))
         layout.addWidget(hide_btn)
         
-        print_btn = QPushButton("🖨 Drucken")
+        print_btn = QPushButton("🖨 Print")
         print_btn.setFixedSize(100, 40)
         print_btn.setStyleSheet(self._button_style("light"))
         layout.addWidget(print_btn)
         
-        export_btn = QPushButton("💾 Exportieren")
+        export_btn = QPushButton("💾 Export")
         export_btn.setFixedSize(110, 40)
         export_btn.setStyleSheet(self._button_style("light"))
         layout.addWidget(export_btn)
         
-        refresh_btn = QPushButton("🔄 Aktualisieren")
+        refresh_btn = QPushButton("🔄 Refresh")
         refresh_btn.setFixedSize(120, 40)
         refresh_btn.clicked.connect(self._populate_table)
         refresh_btn.setStyleSheet(self._button_style("light"))
@@ -427,7 +427,7 @@ class AlarmScreen(BaseScreen):
             self.alarm_table.setItem(row, 5, severity_badge)
             
             # Status (centered)
-            status_text = "Aktiv" if not alarm.acknowledged else "Quittiert"
+            status_text = "Active" if not alarm.acknowledged else "Acknowledged"
             status_color = QColor("#e74c3c") if not alarm.acknowledged else QColor("#2ecc71")
             status_item = QTableWidgetItem(status_text)
             status_item.setBackground(status_color)
@@ -457,20 +457,20 @@ class AlarmScreen(BaseScreen):
         details_html = f"""
         <b>{severity_icon} {alarm.message}</b><br/>
         <br/>
-        <b>Alarm-ID:</b> {alarm.alarm_id}<br/>
-        <b>Bereich:</b> System<br/>
-        <b>Erst aufgetreten:</b> {alarm.timestamp.strftime("%d.%m.%Y %H:%M:%S")}<br/>
-        <b>Zuletzt aufgetreten:</b> {alarm.timestamp.strftime("%d.%m.%Y %H:%M:%S")}<br/>
-        <b>Anzahl Ereignisse:</b> 1<br/>
+        <b>Alarm ID:</b> {alarm.alarm_id}<br/>
+        <b>Area:</b> System<br/>
+        <b>First occurred:</b> {alarm.timestamp.strftime("%d.%m.%Y %H:%M:%S")}<br/>
+        <b>Last occurred:</b> {alarm.timestamp.strftime("%d.%m.%Y %H:%M:%S")}<br/>
+        <b>Event count:</b> 1<br/>
         <br/>
-        <b>Beschreibung:</b><br/>
+        <b>Description:</b><br/>
         {alarm.message}<br/>
         <br/>
-        <b>Mögliche Ursache:</b><br/>
-        Systemüberwachung erforderlich<br/>
+        <b>Possible cause:</b><br/>
+        System monitoring required<br/>
         <br/>
-        <b>Empfohlene Maßnahme:</b><br/>
-        Bitte System überprüfen und Parameter validieren.
+        <b>Recommended action:</b><br/>
+        Please check the system and validate parameters.
         """
         self.detail_display.setText(details_html)
 
@@ -492,7 +492,7 @@ class AlarmScreen(BaseScreen):
         self._highlight_tab(tab_id)
         self._populate_table()  # Zeige entsprechende Alarme basierend auf Tab
         self.selected_alarm = None  # Selektion zurücksetzen
-        self.detail_display.setText("Kein Alarm ausgewählt")
+        self.detail_display.setText("No alarm selected")
 
     def _highlight_tab(self, tab_id):
         """Hebt einen Tab hervor."""
@@ -530,7 +530,7 @@ class AlarmScreen(BaseScreen):
     def _update_status_label(self):
         """Aktualisiert die Status-Zeile."""
         count = len(self.state_manager.alarm_model.get_active_alarms())
-        self.status_label.setText(f"🔴 {count} aktive Alarme")
+        self.status_label.setText(f"🔴 {count} active alarms")
 
     def _on_alarm_change(self, *args):
         """Wird aufgerufen, wenn sich Alarme ändern."""
@@ -540,7 +540,7 @@ class AlarmScreen(BaseScreen):
         # Wenn aktueller Alarm gelöscht wurde, Details zurücksetzen
         if self.selected_alarm and self.current_tab == "active" and self.selected_alarm not in self.state_manager.alarm_model.get_active_alarms():
             self.selected_alarm = None
-            self.detail_display.setText("Kein Alarm ausgewählt")
+            self.detail_display.setText("No alarm selected")
 
     def _get_severity_icon(self, severity: AlarmSeverity) -> str:
         """Gibt das Icon für eine Severity zurück."""

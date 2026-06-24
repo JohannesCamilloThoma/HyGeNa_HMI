@@ -183,11 +183,11 @@ class PlantSummaryCard(QFrame):
 
         self.rows = [
             ("PLANT STATUS", "●  RUNNING", "#24a148"),
-            ("PLANT AVAILABILITY", "98.6 %", "#222831"),
-            ("ACTIVE ALARMS", "3", "#d93025"),
-            ("WARNING ALARMS", "7", "#f28c28"),
-            ("TOTAL POWER DEMAND", "2.45 GW", "#222831"),
-            ("RENEWABLE SHARE", "92.3 %", "#222831"),
+            ("PLANT AVAILABILITY", "99.9 %", "#222831"),
+            ("ACTIVE ALARMS", "0", "#24a148"),
+            ("WARNING ALARMS", "0", "#24a148"),
+            ("TOTAL POWER DEMAND", "8.4 GW", "#222831"),
+            ("BATTERY SOC", "78 %", "#222831"),
         ]
 
         body = QGridLayout()
@@ -344,9 +344,9 @@ class StorageLevelsCard(QFrame):
         self.title_label = title
         layout.addWidget(title)
         layout.addSpacing(7)
-        self._add_storage_level(layout, "Hydrogen", "12,500 t", 78)
+        self._add_storage_level(layout, "Battery", "1.56 GWh", 78)
         layout.addSpacing(8)
-        self._add_storage_level(layout, "Ammonia", "18,700 t", 81)
+        self._add_storage_level(layout, "Ammonia", "48,600 t", 81)
         layout.addStretch()
         self.set_display_scale(1.0)
 
@@ -404,6 +404,8 @@ class StorageLevelsCard(QFrame):
 class OverviewCanvas(QWidget):
     """Scalable canvas using a 1600 x 777 reference coordinate system."""
 
+    process_selected = Signal(str)
+
     BASE_WIDTH = 1600
     BASE_HEIGHT = 777
 
@@ -419,11 +421,11 @@ class OverviewCanvas(QWidget):
     def _create_cards(self):
         self._add_process_card(
             "renewable_energy", QRect(72, 82, 218, 166),
-            "RENEWABLE ENERGY", "RE", "AVAILABLE", "5.62 GW",
+            "RENEWABLE ENERGY", "RE", "AVAILABLE", "14.0 GW",
         )
         self._add_process_card(
             "water_treatment", QRect(390, 82, 218, 166),
-            "WATER TREATMENT", "WT", "RUNNING", "480 m³/h",
+            "WATER TREATMENT", "WT", "RUNNING", "437 m³/h",
         )
         self._add_process_card(
             "electrolysis", QRect(708, 82, 218, 166),
@@ -431,15 +433,15 @@ class OverviewCanvas(QWidget):
         )
         self._add_process_card(
             "hydrogen_storage", QRect(1026, 82, 218, 166),
-            "HYDROGEN STORAGE", "H₂", "RUNNING", "12,500 t",
+            "HYDROGEN STORAGE", "H₂", "RUNNING", "101 t H₂ buffer",
         )
         self._add_process_card(
             "battery_storage", QRect(72, 336, 218, 166),
-            "BATTERY STORAGE", "BAT", "CHARGING", "620 MWh | 78 %",
+            "BATTERY STORAGE", "BAT", "CHARGING", "1.56 GWh | 78 %",
         )
         self._add_process_card(
             "ammonia_synthesis", QRect(708, 336, 218, 166),
-            "AMMONIA SYNTHESIS", "NH₃", "RUNNING", "6,300 t/day NH₃",
+            "AMMONIA SYNTHESIS", "NH₃", "RUNNING", "5,000 t/day NH₃",
         )
         self._add_process_card(
             "export", QRect(1026, 336, 218, 166),
@@ -459,22 +461,22 @@ class OverviewCanvas(QWidget):
             ),
             KpiCard(
                 "AMMONIA PRODUCTION",
-                "6,300 t/day",
-                [("Target", "6,300 t/day"), ("Utilization", "100 %")],
+                "5,000 t/day",
+                [("Target", "5,000 t/day"), ("Utilization", "100 %")],
                 100,
                 self,
             ),
             KpiCard(
-                "ENERGY CONSUMPTION",
-                "2.45 GWh",
-                [("Specific Energy", "14.2 kWh/kg H₂")],
+                "ENERGY DEMAND",
+                "8.4 GW",
+                [("Electrolysis Load", "7.0 GW"), ("BESS Backup", "8.0 GW")],
                 100,
                 self,
             ),
             KpiCard(
                 "RENEWABLE ENERGY",
-                "5.62 GW",
-                [("Available", "5.62 GW"), ("Utilization", "92.3 %")],
+                "14.0 GW",
+                [("Wind", "10.5 GW"), ("PV", "3.5 GW")],
                 92,
                 self,
             ),
@@ -496,6 +498,7 @@ class OverviewCanvas(QWidget):
             page_key,
             self,
         )
+        card.clicked.connect(self.process_selected)
         self.items.append((card, rect))
 
     def resizeEvent(self, event):
@@ -569,6 +572,8 @@ class OverviewCanvas(QWidget):
 class OverviewScreen(BaseScreen):
     """HyGeNa overview screen."""
 
+    process_selected = Signal(str)
+
     def __init__(self, state_manager, navigation, parent=None):
         super().__init__(state_manager, navigation, parent)
         self.setup_ui()
@@ -579,6 +584,7 @@ class OverviewScreen(BaseScreen):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
         self.canvas = OverviewCanvas()
+        self.canvas.process_selected.connect(self.process_selected)
         self.layout.addWidget(self.canvas, 1)
 
 
@@ -607,6 +613,7 @@ def _style_progress_bar(bar, scale):
 
 
 def _px(value, scale, minimum=1):
+    """Scale a reference pixel value while keeping small UI parts legible."""
     return max(minimum, int(round(value * scale)))
 
 

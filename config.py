@@ -5,7 +5,7 @@ Globale Konfigurationen für die HMI-Anwendung.
 # Window Configuration
 MAIN_WINDOW_WIDTH = 1400
 MAIN_WINDOW_HEIGHT = 850
-MAIN_WINDOW_TITLE = "HyGeNa HMI - Professionelle Demonstrations-Anwendung"
+MAIN_WINDOW_TITLE = "HyGeNa HMI - Professional Demo Application"
 
 # Sidebar Configuration
 SIDEBAR_WIDTH = 90

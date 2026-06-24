@@ -33,7 +33,7 @@ class MonitoringScreen(BaseScreen):
         self.layout.addSpacing(10)
         
         # === Subtitle ===
-        subtitle = QLabel("Echtzeit-Daten und erweiterte Systemmetriken")
+        subtitle = QLabel("Real-time data and advanced system metrics")
         subtitle_font = QFont()
         subtitle_font.setPointSize(config.FONT_SIZE_BODY)
         subtitle.setFont(subtitle_font)
@@ -47,15 +47,15 @@ class MonitoringScreen(BaseScreen):
         grid_layout.setSpacing(15)
         
         # Uptime
-        uptime_card = StatusCard("System Uptime", "24h 32m", "Ohne Fehler", "⏱️")
+        uptime_card = StatusCard("System Uptime", "24h 32m", "No faults", "⏱️")
         grid_layout.addWidget(uptime_card)
         
         # Efficiency
-        efficiency_card = StatusCard("Effizienz", "94.5%", "Optimal", "📈")
+        efficiency_card = StatusCard("Efficiency", "94.5%", "Optimal", "📈")
         grid_layout.addWidget(efficiency_card)
         
         # Cycle Count
-        cycle_card = StatusCard("Zyklusanzahl", "1,247", "Heute", "🔄")
+        cycle_card = StatusCard("Cycle Count", "1,247", "Today", "🔄")
         grid_layout.addWidget(cycle_card)
         
         self.layout.addLayout(grid_layout)
@@ -63,7 +63,7 @@ class MonitoringScreen(BaseScreen):
         self.layout.addSpacing(15)
         
         # === Detaillierte Metriken ===
-        metrics_label = QLabel("Detaillierte Systemmetriken")
+        metrics_label = QLabel("Detailed System Metrics")
         metrics_font = QFont()
         metrics_font.setPointSize(config.FONT_SIZE_HEADER)
         metrics_font.setBold(True)
@@ -75,8 +75,8 @@ class MonitoringScreen(BaseScreen):
         
         # Platzhalter für weitere Metriken
         metrics_info = QLabel(
-            "Hier können später Graphen, Diagramme und Trend-Analysen eingefügt werden.\n"
-            "Z.B.: Temperaturverlauf, Druckkurven, Effizienztrends, etc."
+            "Charts, diagrams, and trend analysis can be added here later.\n"
+            "Examples: temperature trends, pressure curves, efficiency trends, etc."
         )
         metrics_info.setStyleSheet(f"""
             background-color: #f8f9fa;

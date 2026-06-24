@@ -20,7 +20,7 @@ class SettingsScreen(BaseScreen):
     def setup_ui(self):
         """Baut die UI auf."""
         # Titel
-        title = QLabel("Einstellungen")
+        title = QLabel("Settings")
         title_font = QFont()
         title_font.setPointSize(config.FONT_SIZE_TITLE + 2)
         title_font.setBold(True)
@@ -31,17 +31,17 @@ class SettingsScreen(BaseScreen):
         self.layout.addSpacing(15)
         
         # === System Settings ===
-        system_group = QGroupBox("Systemeinstellungen")
+        system_group = QGroupBox("System Settings")
         system_layout = QFormLayout()
         
         refresh_spinbox = QSpinBox()
         refresh_spinbox.setValue(1)
         refresh_spinbox.setMinimum(1)
         refresh_spinbox.setMaximum(10)
-        refresh_spinbox.setSuffix(" Sekunde(n)")
-        system_layout.addRow("Aktualisierungsintervall:", refresh_spinbox)
+        refresh_spinbox.setSuffix(" second(s)")
+        system_layout.addRow("Refresh interval:", refresh_spinbox)
         
-        auto_start = QCheckBox("System beim Start aktivieren")
+        auto_start = QCheckBox("Enable system on startup")
         system_layout.addRow("Auto-Start:", auto_start)
         
         system_group.setLayout(system_layout)
@@ -50,13 +50,13 @@ class SettingsScreen(BaseScreen):
         self.layout.addSpacing(10)
         
         # === Alarm Settings ===
-        alarm_group = QGroupBox("Alarmeinstellungen")
+        alarm_group = QGroupBox("Alarm Settings")
         alarm_layout = QFormLayout()
         
-        email_alerts = QCheckBox("E-Mail-Benachrichtigungen aktivieren")
-        alarm_layout.addRow("E-Mail-Warnungen:", email_alerts)
+        email_alerts = QCheckBox("Enable e-mail notifications")
+        alarm_layout.addRow("E-mail alerts:", email_alerts)
         
-        critical_only = QCheckBox("Nur kritische Alarme anzeigen")
+        critical_only = QCheckBox("Show critical alarms only")
         alarm_layout.addRow("Filter:", critical_only)
         
         alarm_group.setLayout(alarm_layout)
@@ -65,15 +65,15 @@ class SettingsScreen(BaseScreen):
         self.layout.addSpacing(10)
         
         # === Maintenance Settings ===
-        maint_group = QGroupBox("Wartungseinstellungen")
+        maint_group = QGroupBox("Maintenance Settings")
         maint_layout = QFormLayout()
         
         maint_warning = QSpinBox()
         maint_warning.setValue(30)
         maint_warning.setMinimum(1)
         maint_warning.setMaximum(365)
-        maint_warning.setSuffix(" Tage")
-        maint_layout.addRow("Warnfrist vor fälligen Wartungen:", maint_warning)
+        maint_warning.setSuffix(" days")
+        maint_layout.addRow("Warning period before due maintenance:", maint_warning)
         
         maint_group.setLayout(maint_layout)
         self.layout.addWidget(maint_group)
@@ -83,7 +83,7 @@ class SettingsScreen(BaseScreen):
         # === Action Buttons ===
         button_layout = QHBoxLayout()
         
-        reset_btn = QPushButton("🔄 Auf Standard zurücksetzen")
+        reset_btn = QPushButton("🔄 Reset to defaults")
         reset_btn.setMaximumWidth(250)
         reset_btn.setStyleSheet(f"""
             QPushButton {{
@@ -99,7 +99,7 @@ class SettingsScreen(BaseScreen):
         """)
         button_layout.addWidget(reset_btn)
         
-        save_btn = QPushButton("💾 Speichern")
+        save_btn = QPushButton("💾 Save")
         save_btn.setMaximumWidth(250)
         save_btn.setStyleSheet(f"""
             QPushButton {{

@@ -49,7 +49,7 @@ class StateManager(QObject):
         self.plant_state.system_state = "EMERGENCY_STOP"
         self.alarm_model.add_alarm(
             "EMERGENCY_STOP",
-            "Notfall-Stopp wurde aktiviert!",
+            "Emergency stop has been activated!",
             AlarmSeverity.CRITICAL
         )
 
@@ -67,7 +67,7 @@ class StateManager(QObject):
             else:
                 self.alarm_model.add_alarm(
                     "START_FAILED",
-                    "Systemstart fehlgeschlagen - kritische Alarme vorhanden",
+                    "System start failed - critical alarms present",
                     AlarmSeverity.ERROR
                 )
 

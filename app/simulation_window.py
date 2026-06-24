@@ -44,7 +44,7 @@ class SimulationWindow(QMainWindow):
         main_layout.addWidget(title)
         
         # === Process Variables Group ===
-        process_group = QGroupBox("Prozessvariablen")
+        process_group = QGroupBox("Process Variables")
         process_layout = QFormLayout()
         
         # Temperature
@@ -62,7 +62,7 @@ class SimulationWindow(QMainWindow):
         self.temp_spinbox.valueChanged.connect(lambda v: self.temp_slider.setValue(int(v)))
         temp_layout.addWidget(self.temp_slider)
         temp_layout.addWidget(self.temp_spinbox)
-        process_layout.addRow("Temperatur:", temp_layout)
+        process_layout.addRow("Temperature:", temp_layout)
         
         # Pressure
         pressure_layout = QHBoxLayout()
@@ -80,7 +80,7 @@ class SimulationWindow(QMainWindow):
         self.pressure_spinbox.valueChanged.connect(lambda v: self.pressure_slider.setValue(int(v * 10)))
         pressure_layout.addWidget(self.pressure_slider)
         pressure_layout.addWidget(self.pressure_spinbox)
-        process_layout.addRow("Druck:", pressure_layout)
+        process_layout.addRow("Pressure:", pressure_layout)
         
         # Fill Level
         fill_layout = QHBoxLayout()
@@ -97,20 +97,20 @@ class SimulationWindow(QMainWindow):
         self.fill_spinbox.valueChanged.connect(lambda v: self.fill_slider.setValue(v))
         fill_layout.addWidget(self.fill_slider)
         fill_layout.addWidget(self.fill_spinbox)
-        process_layout.addRow("Füllstand:", fill_layout)
+        process_layout.addRow("Fill level:", fill_layout)
         
         process_group.setLayout(process_layout)
         main_layout.addWidget(process_group)
         
         # === Equipment Status Group ===
-        equipment_group = QGroupBox("Ausrüstungsstatus")
+        equipment_group = QGroupBox("Equipment Status")
         equipment_layout = QFormLayout()
         
         # Pump Status
-        self.pump_checkbox = QCheckBox("Pumpe läuft")
+        self.pump_checkbox = QCheckBox("Pump running")
         self.pump_checkbox.setChecked(config.DEFAULT_PUMP_STATUS)
         self.pump_checkbox.stateChanged.connect(self._on_pump_status_changed)
-        equipment_layout.addRow("Pumpe:", self.pump_checkbox)
+        equipment_layout.addRow("Pump:", self.pump_checkbox)
         
         # System State
         system_layout = QHBoxLayout()
@@ -122,7 +122,7 @@ class SimulationWindow(QMainWindow):
         self.stop_btn.clicked.connect(lambda: self.state_manager.stop_plant())
         system_layout.addWidget(self.stop_btn)
         
-        self.estop_btn = QPushButton("🛑 NOTFALL-STOPP")
+        self.estop_btn = QPushButton("🛑 EMERGENCY STOP")
         self.estop_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {config.DANGER_COLOR};
@@ -139,45 +139,45 @@ class SimulationWindow(QMainWindow):
         self.estop_btn.clicked.connect(lambda: self.state_manager.trigger_emergency_stop())
         system_layout.addWidget(self.estop_btn)
         
-        equipment_layout.addRow("Systemsteuerung:", system_layout)
+        equipment_layout.addRow("System control:", system_layout)
         
         equipment_group.setLayout(equipment_layout)
         main_layout.addWidget(equipment_group)
         
         # === Alarm Simulation Group ===
-        alarm_group = QGroupBox("Alarm-Simulation")
+        alarm_group = QGroupBox("Alarm Simulation")
         alarm_layout = QFormLayout()
         
         alarm_btn_layout = QHBoxLayout()
         
-        warning_btn = QPushButton("⚠️ Warnung auslösen")
+        warning_btn = QPushButton("⚠️ Trigger warning")
         warning_btn.clicked.connect(self._trigger_warning_alarm)
         alarm_btn_layout.addWidget(warning_btn)
         
-        error_btn = QPushButton("❌ Fehler auslösen")
+        error_btn = QPushButton("❌ Trigger error")
         error_btn.clicked.connect(self._trigger_error_alarm)
         alarm_btn_layout.addWidget(error_btn)
         
-        clear_alarms_btn = QPushButton("✓ Alle Alarme löschen")
+        clear_alarms_btn = QPushButton("✓ Clear all alarms")
         clear_alarms_btn.clicked.connect(lambda: self.state_manager.alarm_model.clear_all())
         alarm_btn_layout.addWidget(clear_alarms_btn)
         
-        alarm_layout.addRow("Alarme:", alarm_btn_layout)
+        alarm_layout.addRow("Alarms:", alarm_btn_layout)
         
         alarm_group.setLayout(alarm_layout)
         main_layout.addWidget(alarm_group)
         
         # === System Actions Group ===
-        actions_group = QGroupBox("System-Aktionen")
+        actions_group = QGroupBox("System Actions")
         actions_layout = QFormLayout()
         
         actions_btn_layout = QHBoxLayout()
         
-        reset_btn = QPushButton("🔄 Auf Standard zurücksetzen")
+        reset_btn = QPushButton("🔄 Reset to defaults")
         reset_btn.clicked.connect(self._reset_all)
         actions_btn_layout.addWidget(reset_btn)
         
-        actions_layout.addRow("Aktionen:", actions_btn_layout)
+        actions_layout.addRow("Actions:", actions_btn_layout)
         
         actions_group.setLayout(actions_layout)
         main_layout.addWidget(actions_group)
@@ -227,7 +227,7 @@ class SimulationWindow(QMainWindow):
         from models.alarm_model import AlarmSeverity
         self.state_manager.alarm_model.add_alarm(
             f"WARNING_{self.state_manager.alarm_model.alarm_added.emit.__self__}",
-            "Testalarm: Warnung - Bitte überprüfen Sie das System",
+            "Test alarm: Warning - please check the system",
             AlarmSeverity.WARNING
         )
 
@@ -236,7 +236,7 @@ class SimulationWindow(QMainWindow):
         from models.alarm_model import AlarmSeverity
         self.state_manager.alarm_model.add_alarm(
             f"ERROR_{self.state_manager.alarm_model.alarm_added.emit.__self__}",
-            "Testalarm: Fehler - Sofortige Aufmerksamkeit erforderlich",
+            "Test alarm: Error - immediate attention required",
             AlarmSeverity.ERROR
         )
 

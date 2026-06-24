@@ -73,11 +73,11 @@ class Sidebar(QWidget):
         icon_color = "#f5f5f5"
 
         menu_items = [
-            ("home", qta.icon("mdi.home-outline", color=icon_color), "Übersicht"),
-            ("alarms", qta.icon("mdi.bell-outline", color=icon_color), "Alarme"),
+            ("home", qta.icon("mdi.home-outline", color=icon_color), "Overview"),
+            ("alarms", qta.icon("mdi.bell-outline", color=icon_color), "Alarms"),
             ("monitoring", qta.icon("mdi.chart-line", color=icon_color), "Monitoring"),
-            ("maintenance", qta.icon("mdi.wrench-outline", color=icon_color), "Wartung"),
-            ("settings", qta.icon("mdi.cog-outline", color=icon_color), "Einstellungen"),
+            ("maintenance", qta.icon("mdi.wrench-outline", color=icon_color), "Maintenance"),
+            ("settings", qta.icon("mdi.cog-outline", color=icon_color), "Settings"),
         ]
 
         for index, (screen_id, icon, tooltip) in enumerate(menu_items):

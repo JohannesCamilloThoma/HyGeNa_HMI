@@ -46,10 +46,12 @@ class Navigation(QObject):
     def get_screen_title(self, screen_name: str) -> str:
         """Gibt einen benutzerfreundlichen Titel für den Screen zurück."""
         titles = {
-            "home": "Übersicht",
-            "alarms": "Alarme",
+            "home": "Overview",
+            "electrolysis": "Electrolysis",
+            "water_treatment": "Water Treatment",
+            "alarms": "Alarms",
             "monitoring": "Monitoring",
-            "maintenance": "Wartung",
-            "settings": "Einstellungen",
+            "maintenance": "Maintenance",
+            "settings": "Settings",
         }
         return titles.get(screen_name, screen_name.capitalize())

@@ -22,7 +22,7 @@ class HomeScreen(BaseScreen):
     def setup_ui(self):
         """Baut die UI auf."""
         # Titel
-        title = QLabel("System-Übersicht")
+        title = QLabel("System Overview")
         title_font = QFont()
         title_font.setPointSize(config.FONT_SIZE_TITLE + 2)
         title_font.setBold(True)
@@ -37,27 +37,27 @@ class HomeScreen(BaseScreen):
         grid_layout.setSpacing(15)
         
         # Temperatur
-        self.temp_card = StatusCard("Temperatur", "20°C", "Normal", "🌡️")
+        self.temp_card = StatusCard("Temperature", "20°C", "Normal", "🌡️")
         grid_layout.addWidget(self.temp_card, 0, 0)
         
         # Druck
-        self.pressure_card = StatusCard("Druck", "1.0 bar", "OK", "⚙️")
+        self.pressure_card = StatusCard("Pressure", "1.0 bar", "OK", "⚙️")
         grid_layout.addWidget(self.pressure_card, 0, 1)
         
         # Füllstand
-        self.fill_card = StatusCard("Füllstand", "50%", "Normal", "📦")
+        self.fill_card = StatusCard("Fill Level", "50%", "Normal", "📦")
         grid_layout.addWidget(self.fill_card, 0, 2)
         
         # System State
-        self.system_card = StatusCard("Systemstatus", "Gestoppt", "Bereit", "🟢")
+        self.system_card = StatusCard("System Status", "Stopped", "Ready", "🟢")
         grid_layout.addWidget(self.system_card, 1, 0)
         
         # Pumpe
-        self.pump_card = StatusCard("Pumpe", "AUS", "Inaktiv", "💧")
+        self.pump_card = StatusCard("Pump", "OFF", "Inactive", "💧")
         grid_layout.addWidget(self.pump_card, 1, 1)
         
         # Alarme
-        self.alarms_card = StatusCard("Aktive Alarme", "0", "Keine", "🔔")
+        self.alarms_card = StatusCard("Active Alarms", "0", "None", "🔔")
         grid_layout.addWidget(self.alarms_card, 1, 2)
         
         self.layout.addLayout(grid_layout)
@@ -82,9 +82,9 @@ class HomeScreen(BaseScreen):
         
         # Farbiger Untertitel basierend auf Wert
         if value < 0:
-            status = "Zu kalt"
+            status = "Too cold"
         elif value > 60:
-            status = "Warnung!"
+            status = "Warning!"
         else:
             status = "Normal"
         self.temp_card.set_subtitle(status)
@@ -94,9 +94,9 @@ class HomeScreen(BaseScreen):
         self.pressure_card.set_value(f"{value:.1f} bar")
         
         if value < 0.5:
-            status = "Niedrig"
+            status = "Low"
         elif value > 8:
-            status = "Zu hoch!"
+            status = "Too high!"
         else:
             status = "OK"
         self.pressure_card.set_subtitle(status)
@@ -106,9 +106,9 @@ class HomeScreen(BaseScreen):
         self.fill_card.set_value(f"{value:.0f}%")
         
         if value < 20:
-            status = "Niedrig"
+            status = "Low"
         elif value > 90:
-            status = "Hoch"
+            status = "High"
         else:
             status = "Normal"
         self.fill_card.set_subtitle(status)
@@ -116,10 +116,10 @@ class HomeScreen(BaseScreen):
     def _update_system_state(self, state):
         """Aktualisiert den Systemstatus."""
         state_text = {
-            "STOPPED": "Gestoppt",
-            "RUNNING": "Läuft",
-            "EMERGENCY_STOP": "NOTFALL-STOPP",
-            "ERROR": "Fehler",
+            "STOPPED": "Stopped",
+            "RUNNING": "Running",
+            "EMERGENCY_STOP": "Emergency Stop",
+            "ERROR": "Error",
         }.get(state, state)
         
         icon = {
@@ -131,12 +131,12 @@ class HomeScreen(BaseScreen):
         
         self.system_card.set_value(state_text)
         # Aktualisiere auch Icon (einfache Variante ohne Rekonstruktion)
-        self.system_card.set_subtitle("Status aktualisiert")
+        self.system_card.set_subtitle("Status updated")
 
     def _update_pump_status(self, status):
         """Aktualisiert die Pumpenstatus."""
-        text = "EIN" if status else "AUS"
-        subtitle = "Läuft" if status else "Inaktiv"
+        text = "ON" if status else "OFF"
+        subtitle = "Running" if status else "Inactive"
         self.pump_card.set_value(text)
         self.pump_card.set_subtitle(subtitle)
 
@@ -144,7 +144,7 @@ class HomeScreen(BaseScreen):
         """Aktualisiert die Alarmanzahl."""
         count = len(self.state_manager.alarm_model.get_active_alarms())
         self.alarms_card.set_value(str(count))
-        status = "Alarme!" if count > 0 else "Keine"
+        status = "Alarms!" if count > 0 else "None"
         self.alarms_card.set_subtitle(status)
 
     def _update_all(self):

@@ -27,7 +27,7 @@ class FooterBar(QWidget):
         layout.setSpacing(15)
         
         # === Status Text (Links) ===
-        self.status_text = QLabel("Keine aktiven Alarme")
+        self.status_text = QLabel("No active alarms")
         self.status_text.setStyleSheet(f"""
             font-size: {config.FONT_SIZE_BODY}pt;
             color: {config.TEXT_SECONDARY};

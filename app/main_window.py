@@ -11,6 +11,8 @@ from widgets.header_bar import HeaderBar
 from widgets.footer_bar import FooterBar
 from widgets.content_container import ContentContainer
 from screens.overview_screen import OverviewScreen
+from screens.electrolysis_screen import ElectrolysisScreen
+from screens.water_treatment_screen import WaterTreatmentScreen
 from screens.alarm_screen import AlarmScreen
 from screens.monitoring_screen import MonitoringScreen
 from screens.maintenance_screen import MaintenanceScreen
@@ -90,6 +92,8 @@ class MainWindow(QMainWindow):
     def _register_screens(self):
         """Registriert alle verfügbaren Screens."""
         self.navigation.register_screen("home", OverviewScreen)
+        self.navigation.register_screen("electrolysis", ElectrolysisScreen)
+        self.navigation.register_screen("water_treatment", WaterTreatmentScreen)
         self.navigation.register_screen("alarms", AlarmScreen)
         self.navigation.register_screen("monitoring", MonitoringScreen)
         self.navigation.register_screen("maintenance", MaintenanceScreen)
@@ -105,6 +109,9 @@ class MainWindow(QMainWindow):
             
             # Setze im Content Container
             self.content_container.set_screen_widget(screen_widget)
+
+            if hasattr(screen_widget, "process_selected"):
+                screen_widget.process_selected.connect(self._on_process_selected)
             
             # Update Header Title
             title = self.navigation.get_screen_title(screen_name)
@@ -116,12 +123,21 @@ class MainWindow(QMainWindow):
     def _update_header_status(self, state: str):
         """Aktualisiert den Anlagenstatus im Header."""
         state_text = {
-            "STOPPED": "Gestoppt",
-            "RUNNING": "Läuft",
-            "EMERGENCY_STOP": "NOTFALL-STOPP",
-            "ERROR": "Fehler",
+            "STOPPED": "Stopped",
+            "RUNNING": "Running",
+            "EMERGENCY_STOP": "Emergency Stop",
+            "ERROR": "Error",
         }.get(state, state)
         self.header_bar.set_system_status(state_text)
+
+    def _on_process_selected(self, page_key: str):
+        """Navigates from overview process cards to detail screens."""
+        detail_screens = {
+            "electrolysis": "electrolysis",
+        }
+        target = detail_screens.get(page_key)
+        if target:
+            self.navigation.navigate_to(target)
 
     def _on_stop_pressed(self):
         """Handler für STOP-Button."""
@@ -130,7 +146,7 @@ class MainWindow(QMainWindow):
         
         # Update Status Text
         alarm_count = len(self.state_manager.alarm_model.get_active_alarms())
-        status_text = f"{alarm_count} Alarme aktiv" if alarm_count > 0 else "NOTFALL-STOPP aktiviert"
+        status_text = f"{alarm_count} active alarms" if alarm_count > 0 else "Emergency stop activated"
         self.footer_bar.set_status_text(status_text)
 
     def closeEvent(self, event):

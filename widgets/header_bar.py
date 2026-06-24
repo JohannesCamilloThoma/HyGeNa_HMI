@@ -28,7 +28,7 @@ class HeaderBar(QWidget):
         layout.setSpacing(28)
 
         # === Screen Title (Links) ===
-        self.screen_title = QLabel("Übersicht")
+        self.screen_title = QLabel("Overview")
         self.screen_title.setMinimumWidth(260)
         self.screen_title.setStyleSheet("""
             background-color: transparent;
@@ -52,7 +52,7 @@ class HeaderBar(QWidget):
         layout.addWidget(self.datetime_label)
 
         # === System Status ===
-        self.status_label = QLabel("Anlage: Gestoppt")
+        self.status_label = QLabel("Plant: Stopped")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
         self.status_label.setMinimumWidth(180)
         self.status_label.setStyleSheet("""
@@ -94,7 +94,7 @@ class HeaderBar(QWidget):
         self.screen_title.setText(title)
 
     def set_system_status(self, status: str):
-        self.status_label.setText(f"Anlage: {status}")
+        self.status_label.setText(f"Plant: {status}")
 
     def set_logo_image(self, image_path: str, width: int = 220, height: int = 70):
         pixmap = QPixmap(image_path)
