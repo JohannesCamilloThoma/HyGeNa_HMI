@@ -13,8 +13,8 @@ from widgets.content_container import ContentContainer
 from screens.overview_screen import OverviewScreen
 from screens.electrolysis_screen import ElectrolysisScreen
 from screens.water_treatment_screen import WaterTreatmentScreen
+from screens.analytics_screen import AnalyticsScreen
 from screens.alarm_screen import AlarmScreen
-from screens.monitoring_screen import MonitoringScreen
 from screens.maintenance_screen import MaintenanceScreen
 from screens.settings_screen import SettingsScreen
 import config
@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
         self.navigation.register_screen("electrolysis", ElectrolysisScreen)
         self.navigation.register_screen("water_treatment", WaterTreatmentScreen)
         self.navigation.register_screen("alarms", AlarmScreen)
-        self.navigation.register_screen("monitoring", MonitoringScreen)
+        self.navigation.register_screen("monitoring", AnalyticsScreen)
         self.navigation.register_screen("maintenance", MaintenanceScreen)
         self.navigation.register_screen("settings", SettingsScreen)
 

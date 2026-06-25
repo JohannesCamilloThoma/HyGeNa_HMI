@@ -50,7 +50,7 @@ class Navigation(QObject):
             "electrolysis": "Electrolysis",
             "water_treatment": "Water Treatment",
             "alarms": "Alarms",
-            "monitoring": "Monitoring",
+            "monitoring": "Analytics",
             "maintenance": "Maintenance",
             "settings": "Settings",
         }
