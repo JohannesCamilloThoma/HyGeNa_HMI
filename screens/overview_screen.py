@@ -433,7 +433,7 @@ class OverviewCanvas(QWidget):
         )
         self._add_process_card(
             "hydrogen_storage", QRect(1026, 82, 218, 166),
-            "HYDROGEN STORAGE", "H₂", "RUNNING", "101 t H₂ buffer",
+            "AMMONIA STORAGE", "H₂", "RUNNING", "101 t buffer",
         )
         self._add_process_card(
             "battery_storage", QRect(72, 336, 218, 166),

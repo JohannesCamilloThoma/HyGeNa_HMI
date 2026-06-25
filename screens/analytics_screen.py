@@ -2,21 +2,20 @@
 Analytics screen for energy, production and equipment performance.
 """
 
+from pathlib import Path
+
 from PySide6.QtCore import QPointF, QRectF, Qt
-from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPolygonF
+from PySide6.QtGui import QColor, QFont, QPainter, QPainterPath, QPen, QPixmap
 from PySide6.QtWidgets import (
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QPushButton,
     QSizePolicy,
     QVBoxLayout,
     QWidget,
 )
 
 from screens.base_screen import BaseScreen
-import config
 
 
 H2_TARGET_TPD = 1050
@@ -47,12 +46,13 @@ RED = QColor("#d94f3d")
 TEXT = QColor("#1f2937")
 MUTED = QColor("#6b7280")
 GRID = QColor("#dfe5ec")
+ENERGY_BALANCE_IMAGE = Path(__file__).resolve().parents[1] / "images" / "icons" / "energy_balance.png"
 
 
 class CardFrame(QFrame):
     """White rounded dashboard card."""
 
-    def __init__(self, title, parent=None):
+    def __init__(self, title="", parent=None, compact=False):
         super().__init__(parent)
         self.setStyleSheet("""
             CardFrame {
@@ -66,17 +66,23 @@ class CardFrame(QFrame):
             }
         """)
         self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(14, 12, 14, 12)
-        self.layout.setSpacing(10)
+        if compact:
+            self.layout.setContentsMargins(8, 8, 8, 8)
+            self.layout.setSpacing(0)
+        else:
+            self.layout.setContentsMargins(16, 12, 16, 12)
+            self.layout.setSpacing(8)
 
-        title_label = QLabel(title)
-        title_label.setStyleSheet("""
-            color: #111827;
-            font-size: 12pt;
-            font-weight: 900;
-            border: none;
-        """)
-        self.layout.addWidget(title_label)
+        if title:
+            title_label = QLabel(title)
+            title_label.setStyleSheet("""
+                color: #111827;
+                font-size: 12pt;
+                font-weight: 900;
+                border: none;
+            """)
+            title_label.setWordWrap(True)
+            self.layout.addWidget(title_label)
 
 
 class TrendChartWidget(QWidget):
@@ -84,7 +90,7 @@ class TrendChartWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(330)
+        self.setMinimumHeight(286)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     def paintEvent(self, event):
@@ -92,8 +98,12 @@ class TrendChartWidget(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#ffffff"))
 
-        top = QRectF(46, 12, self.width() - 70, (self.height() - 74) * 0.52)
-        bottom = QRectF(46, top.bottom() + 44, self.width() - 70, (self.height() - 74) * 0.36)
+        chart_left = 48
+        chart_width = max(260, self.width() - 78)
+        legend_top = self.height() - 34
+        chart_area_bottom = legend_top - 18
+        top = QRectF(chart_left, 22, chart_width, max(64, (chart_area_bottom - 58) * 0.50))
+        bottom = QRectF(chart_left, top.bottom() + 34, chart_width, max(58, chart_area_bottom - top.bottom() - 52))
 
         self._draw_chart(
             painter,
@@ -114,6 +124,8 @@ class TrendChartWidget(QWidget):
         self._draw_legend(painter)
 
     def _draw_chart(self, painter, rect, label, series, min_v, max_v):
+        painter.save()
+        painter.setClipRect(self.rect())
         painter.setPen(QPen(GRID, 1))
         for i in range(5):
             y = rect.top() + rect.height() * i / 4
@@ -121,9 +133,9 @@ class TrendChartWidget(QWidget):
 
         painter.setPen(QPen(QColor("#9aa6b2"), 1))
         painter.drawRect(rect)
-        self._font(painter, 10, True)
+        self._font(painter, 9, True)
         painter.setPen(MUTED)
-        painter.drawText(QRectF(rect.left(), rect.top() - 18, 230, 16), Qt.AlignmentFlag.AlignLeft, label)
+        painter.drawText(QRectF(rect.left(), rect.top() - 16, 230, 14), Qt.AlignmentFlag.AlignLeft, label)
 
         for data, color, _ in series:
             path = QPainterPath()
@@ -137,12 +149,13 @@ class TrendChartWidget(QWidget):
             painter.setPen(QPen(color, 2.4))
             painter.drawPath(path)
 
-        self._font(painter, 9)
+        self._font(painter, 8)
         painter.setPen(MUTED)
         for i, time in enumerate(TIMES):
             x = rect.left() + rect.width() * i / (len(TIMES) - 1)
             if i % 2 == 0 or i == len(TIMES) - 1:
-                painter.drawText(QRectF(x - 22, rect.bottom() + 4, 44, 16), Qt.AlignmentFlag.AlignCenter, time)
+                painter.drawText(QRectF(x - 22, rect.bottom() + 3, 44, 12), Qt.AlignmentFlag.AlignCenter, time)
+        painter.restore()
 
     def _draw_legend(self, painter):
         items = [
@@ -151,18 +164,19 @@ class TrendChartWidget(QWidget):
             (PURPLE, "Total Power Demand (GW)"),
             (ORANGE, "Renewable Availability (GW)"),
         ]
-        self._font(painter, 9, True)
+        self._font(painter, 8, True)
+        col_w = max(220, (self.width() - 86) // 2)
         positions = [
-            (46, self.height() - 34),
-            (280, self.height() - 34),
-            (46, self.height() - 16),
-            (280, self.height() - 16),
+            (46, self.height() - 29),
+            (46 + col_w, self.height() - 29),
+            (46, self.height() - 13),
+            (46 + col_w, self.height() - 13),
         ]
         for (color, label), (x, y) in zip(items, positions):
             painter.setPen(QPen(color, 2.5))
             painter.drawLine(QPointF(x, y - 5), QPointF(x + 22, y - 5))
             painter.setPen(TEXT)
-            painter.drawText(QRectF(x + 28, y - 14, 230, 18), Qt.AlignmentFlag.AlignLeft, label)
+            painter.drawText(QRectF(x + 28, y - 12, col_w - 34, 14), Qt.AlignmentFlag.AlignLeft, label)
 
     def _font(self, painter, size, bold=False):
         font = QFont("Segoe UI")
@@ -171,76 +185,33 @@ class TrendChartWidget(QWidget):
         painter.setFont(font)
 
 
-class EnergyBalanceWidget(QWidget):
-    """Simple energy-flow and demand breakdown widget."""
+class EnergyBalanceImage(QWidget):
+    """Paints the energy-balance image into all available card space."""
 
-    rows = [
-        ("Electrolysis", 7.00, "83.3 %", BLUE),
-        ("Utilities / BOP", 0.75, "8.9 %", TEAL),
-        ("Compression", 0.35, "4.2 %", PURPLE),
-        ("BESS Smoothing", 0.12, "1.4 %", ORANGE),
-        ("Cooling Auxiliaries", 0.08, "1.0 %", GREEN),
-        ("Control & HMI", 0.10, "1.2 %", QColor("#64748b")),
-    ]
-
-    def __init__(self, parent=None):
+    def __init__(self, image_path, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(230)
+        self._pixmap = QPixmap(str(image_path))
+        self.setMinimumHeight(138)
+        self.setContentsMargins(0, 0, 0, 0)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setStyleSheet("background-color: transparent; border: none;")
 
     def paintEvent(self, event):
+        if self._pixmap.isNull():
+            return
+
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.fillRect(self.rect(), QColor("#ffffff"))
-        w = self.width()
-
-        left = QRectF(12, 48, 98, 72)
-        mid = QRectF(142, 48, 106, 72)
-        surplus = QRectF(142, 148, 106, 46)
-
-        self._box(painter, left, QColor("#e8f5ee"), GREEN, ["Renewable", "Available", "9.1 GW", "of 14.0 GW installed"])
-        self._box(painter, mid, QColor("#e8f2fb"), BLUE, ["Plant Demand", "8.4 GW"])
-        self._box(painter, surplus, QColor("#fff8e7"), ORANGE, ["Surplus / Charging", "0.7 GW"])
-        self._arrow(painter, QPointF(left.right(), left.center().y()), QPointF(mid.left(), mid.center().y()), BLUE)
-        self._arrow(painter, QPointF(left.center().x(), left.bottom()), QPointF(surplus.left(), surplus.center().y()), ORANGE)
-
-        x0 = 266
-        y = 18
-        for label, gw, percent, color in self.rows:
-            row_rect = QRectF(x0, y, max(150, w - x0 - 10), 28)
-            painter.setPen(QPen(QColor("#e5e7eb"), 1))
-            painter.setBrush(QColor("#f8fafc"))
-            painter.drawRoundedRect(row_rect, 5, 5)
-            painter.setBrush(color)
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRoundedRect(QRectF(row_rect.left(), row_rect.top(), row_rect.width() * gw / TOTAL_POWER_DEMAND_GW, row_rect.height()), 5, 5)
-            self._font(painter, 7, True)
-            painter.setPen(TEXT)
-            painter.drawText(row_rect.adjusted(6, 0, -58, 0), Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, label)
-            painter.drawText(row_rect.adjusted(6, 0, -6, 0), Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight, f"{gw:.2f} GW  {percent}")
-            y += 31
-
-    def _box(self, painter, rect, fill, border, lines):
-        painter.setPen(QPen(border, 1.5))
-        painter.setBrush(fill)
-        painter.drawRoundedRect(rect, 6, 6)
-        self._font(painter, 9, True)
-        painter.setPen(TEXT)
-        line_h = 15
-        start = rect.center().y() - (len(lines) * line_h) / 2
-        for i, line in enumerate(lines):
-            painter.drawText(QRectF(rect.left() + 6, start + i * line_h, rect.width() - 12, line_h), Qt.AlignmentFlag.AlignCenter, line)
-
-    def _arrow(self, painter, start, end, color):
-        painter.setPen(QPen(color, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
-        painter.setBrush(color)
-        painter.drawLine(start, end)
-        painter.drawPolygon(QPolygonF([end, QPointF(end.x() - 10, end.y() - 6), QPointF(end.x() - 10, end.y() + 6)]))
-
-    def _font(self, painter, size, bold=False):
-        font = QFont("Segoe UI")
-        font.setPixelSize(size)
-        font.setBold(bold)
-        painter.setFont(font)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        target = self.rect().adjusted(2, 2, -2, -2)
+        scaled = self._pixmap.scaled(
+            target.size() * self.devicePixelRatioF(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        scaled.setDevicePixelRatio(self.devicePixelRatioF())
+        x = target.x() + (target.width() - scaled.width() / scaled.devicePixelRatio()) / 2
+        y = target.y() + (target.height() - scaled.height() / scaled.devicePixelRatio()) / 2
+        painter.drawPixmap(QPointF(x, y), scaled)
 
 
 class ProductionLossWidget(QWidget):
@@ -256,34 +227,38 @@ class ProductionLossWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(190)
+        self.setMinimumHeight(68)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#ffffff"))
-        self._font(painter, 9, True)
-        y = 16
+        self._font(painter, 7, True)
+        y = 4
         max_loss = 5.0
         for label, value, pct, color in self.rows:
             painter.setPen(TEXT)
-            painter.drawText(QRectF(10, y, 160, 18), Qt.AlignmentFlag.AlignLeft, label)
-            bar = QRectF(178, y + 3, self.width() - 288, 12)
+            label_w = min(154, max(112, int(self.width() * 0.42)))
+            painter.drawText(QRectF(10, y, label_w, 13), Qt.AlignmentFlag.AlignLeft, label)
+            right_w = 92
+            bar_left = label_w + 18
+            bar = QRectF(bar_left, y + 3, max(58, self.width() - bar_left - right_w - 10), 8)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(QColor("#edf2f7"))
             painter.drawRoundedRect(bar, 6, 6)
             painter.setBrush(color)
             painter.drawRoundedRect(QRectF(bar.left(), bar.top(), bar.width() * value / max_loss, bar.height()), 6, 6)
             painter.setPen(TEXT)
-            painter.drawText(QRectF(bar.right() + 10, y, 62, 18), Qt.AlignmentFlag.AlignLeft, f"{value:.1f} t")
-            painter.drawText(QRectF(self.width() - 50, y, 44, 18), Qt.AlignmentFlag.AlignRight, pct)
-            y += 28
+            painter.drawText(QRectF(bar.right() + 8, y, 48, 13), Qt.AlignmentFlag.AlignLeft, f"{value:.1f} t")
+            painter.drawText(QRectF(self.width() - 44, y, 38, 13), Qt.AlignmentFlag.AlignRight, pct)
+            y += 14
         painter.setPen(QPen(QColor("#e5e7eb"), 1))
         painter.drawLine(QPointF(10, y + 4), QPointF(self.width() - 10, y + 4))
-        painter.setPen(TEXT)
-        painter.drawText(QRectF(10, y + 16, self.width() - 20, 18), Qt.AlignmentFlag.AlignLeft, "Total estimated loss (24 h): 12.5 t H₂")
-        painter.setPen(MUTED)
-        painter.drawText(QRectF(10, y + 38, self.width() - 20, 18), Qt.AlignmentFlag.AlignLeft, "≈ 1.2 % of daily H₂ production")
+        if y + 42 <= self.height():
+            painter.setPen(TEXT)
+            painter.drawText(QRectF(10, y + 9, self.width() - 20, 15), Qt.AlignmentFlag.AlignLeft, "24 h loss: 12.5 t H₂")
+            painter.setPen(MUTED)
+            painter.drawText(QRectF(10, y + 25, self.width() - 20, 15), Qt.AlignmentFlag.AlignLeft, "≈ 1.2 % of daily H₂ production")
 
     def _font(self, painter, size, bold=False):
         font = QFont("Segoe UI")
@@ -305,37 +280,46 @@ class EquipmentHealthTable(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(220)
+        self.setMinimumHeight(126)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#ffffff"))
-        cols = [12, 190, 360, 470, 600, 690]
+        w = self.width()
+        cols = [
+            12,
+            int(w * 0.26),
+            int(w * 0.44),
+            int(w * 0.55),
+            int(w * 0.66),
+            int(w * 0.74),
+        ]
         headers = ["Asset", "Health", "Status", "RUL", "Trend", "Next Recommendation"]
         self._font(painter, 9, True)
         painter.setPen(MUTED)
         for x, header in zip(cols, headers):
-            painter.drawText(QRectF(x, 4, 170, 18), Qt.AlignmentFlag.AlignLeft, header)
-        y = 32
+            painter.drawText(QRectF(x, 4, max(54, w - x - 8), 18), Qt.AlignmentFlag.AlignLeft, header)
+        y = 22
         for asset, health, status, rul, trend, rec in self.rows:
             painter.setPen(QPen(QColor("#e5e7eb"), 1))
             painter.drawLine(QPointF(8, y - 7), QPointF(self.width() - 8, y - 7))
-            self._font(painter, 10, True)
+            self._font(painter, 7, True)
             painter.setPen(TEXT)
-            painter.drawText(QRectF(cols[0], y, 170, 20), Qt.AlignmentFlag.AlignLeft, asset)
-            self._health_bar(painter, QRectF(cols[1], y + 4, 100, 10), health)
-            painter.drawText(QRectF(cols[1] + 110, y, 44, 20), Qt.AlignmentFlag.AlignLeft, f"{health} %")
+            painter.drawText(QRectF(cols[0], y, cols[1] - cols[0] - 10, 16), Qt.AlignmentFlag.AlignLeft, asset)
+            health_bar_w = max(70, min(96, cols[2] - cols[1] - 56))
+            self._health_bar(painter, QRectF(cols[1], y + 4, health_bar_w, 8), health)
+            painter.drawText(QRectF(cols[1] + health_bar_w + 8, y, 44, 16), Qt.AlignmentFlag.AlignLeft, f"{health} %")
             color = GREEN if status == "Normal" else ORANGE
             painter.setPen(color)
-            painter.drawText(QRectF(cols[2], y, 90, 20), Qt.AlignmentFlag.AlignLeft, status)
+            painter.drawText(QRectF(cols[2], y, 90, 16), Qt.AlignmentFlag.AlignLeft, status)
             painter.setPen(TEXT)
-            painter.drawText(QRectF(cols[3], y, 90, 20), Qt.AlignmentFlag.AlignLeft, rul)
+            painter.drawText(QRectF(cols[3], y, 90, 16), Qt.AlignmentFlag.AlignLeft, rul)
             painter.setPen(color)
-            painter.drawText(QRectF(cols[4], y, 50, 20), Qt.AlignmentFlag.AlignCenter, trend)
+            painter.drawText(QRectF(cols[4], y, 50, 16), Qt.AlignmentFlag.AlignCenter, trend)
             painter.setPen(TEXT)
-            painter.drawText(QRectF(cols[5], y, self.width() - cols[5] - 8, 20), Qt.AlignmentFlag.AlignLeft, rec)
-            y += 34
+            painter.drawText(QRectF(cols[5], y, self.width() - cols[5] - 8, 16), Qt.AlignmentFlag.AlignLeft, rec)
+            y += 21
 
     def _health_bar(self, painter, rect, value):
         color = GREEN if value > 80 else ORANGE if value >= 70 else RED
@@ -359,52 +343,56 @@ class ForecastEfficiencyWidget(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(220)
+        self.setMinimumHeight(126)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), QColor("#ffffff"))
-        left = QRectF(8, 8, self.width() * 0.48 - 12, self.height() - 16)
+        left = QRectF(8, 8, self.width() * 0.49 - 10, self.height() - 16)
         right = QRectF(left.right() + 16, 8, self.width() - left.right() - 24, self.height() - 16)
-        self._panel(painter, left, "Expected H₂ Production (next 6 h)")
+        self._panel(painter, left, "H₂ Forecast (next 6 h)")
         self._panel(painter, right, "Efficiency Trend")
-        self._forecast(painter, left.adjusted(14, 34, -14, -14))
-        self._efficiency(painter, right.adjusted(14, 34, -14, -14))
+        self._forecast(painter, left.adjusted(12, 28, -12, -12))
+        self._efficiency(painter, right.adjusted(12, 30, -12, -10))
 
     def _panel(self, painter, rect, title):
         painter.setPen(QPen(QColor("#d7dce3"), 1))
         painter.setBrush(QColor("#fbfcfe"))
         painter.drawRoundedRect(rect, 7, 7)
-        self._font(painter, 10, True)
+        self._font(painter, 7 if rect.width() < 210 else 8, True)
         painter.setPen(TEXT)
-        painter.drawText(rect.adjusted(12, 8, -12, -8), Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft, title)
+        painter.drawText(rect.adjusted(10, 7, -10, -7), Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft, title)
 
     def _forecast(self, painter, rect):
-        chart = QRectF(rect.left(), rect.top(), rect.width(), rect.height() * 0.55)
+        painter.save()
+        painter.setClipRect(self.rect())
+        chart = QRectF(rect.left(), rect.top(), rect.width(), max(28, rect.height() - 22))
         self._line_chart(painter, chart, self.forecast, 43.0, 45.4, BLUE)
         labels = ["Now", "+1h", "+2h", "+3h", "+4h", "+5h", "+6h"]
-        self._font(painter, 8, True)
+        self._font(painter, 7, True)
         painter.setPen(MUTED)
         for i, label in enumerate(labels):
             x = chart.left() + chart.width() * i / (len(labels) - 1)
-            painter.drawText(QRectF(x - 18, chart.bottom() + 4, 36, 14), Qt.AlignmentFlag.AlignCenter, label)
+            painter.drawText(QRectF(x - 16, chart.bottom() + 3, 32, 12), Qt.AlignmentFlag.AlignCenter, label)
+        painter.restore()
 
     def _efficiency(self, painter, rect):
-        self._font(painter, 8, True)
+        self._font(painter, 7, True)
         y = rect.top()
         rows = [
-            ("Specific energy now", f"{SPECIFIC_ENERGY_KWH_PER_KG} kWh/kg H₂"),
-            ("24 h average", "56.5 kWh/kg H₂"),
+            ("Now", f"{SPECIFIC_ENERGY_KWH_PER_KG} kWh/kg H₂"),
+            ("24 h avg", "56.5 kWh/kg H₂"),
             ("Target", "≤ 57 kWh/kg H₂"),
             ("Status", "On target"),
         ]
+        row_h = min(18, max(14, int(rect.height() / len(rows))))
         for label, value in rows:
             painter.setPen(MUTED)
-            painter.drawText(QRectF(rect.left(), y, rect.width() * 0.50, 22), Qt.AlignmentFlag.AlignLeft, label)
+            painter.drawText(QRectF(rect.left(), y, rect.width() * 0.42, row_h), Qt.AlignmentFlag.AlignLeft, label)
             painter.setPen(GREEN if value == "On target" else TEXT)
-            painter.drawText(QRectF(rect.left() + rect.width() * 0.50, y, rect.width() * 0.50, 22), Qt.AlignmentFlag.AlignRight, value)
-            y += 30
+            painter.drawText(QRectF(rect.left() + rect.width() * 0.42, y, rect.width() * 0.58, row_h), Qt.AlignmentFlag.AlignRight, value)
+            y += row_h + 3
 
     def _line_chart(self, painter, rect, data, min_v, max_v, color):
         painter.setPen(QPen(GRID, 1))
@@ -446,38 +434,6 @@ class AnalyticsScreen(BaseScreen):
         root.setContentsMargins(18, 16, 18, 18)
         root.setSpacing(12)
 
-        header = QHBoxLayout()
-        title_col = QVBoxLayout()
-        title = QLabel("Analytics")
-        title.setStyleSheet("font-size: 24pt; font-weight: 900; color: #111827; border: none;")
-        subtitle = QLabel("Energy, production and equipment performance")
-        subtitle.setStyleSheet("font-size: 10pt; font-weight: 600; color: #6b7280; border: none;")
-        title_col.addWidget(title)
-        title_col.addWidget(subtitle)
-        header.addLayout(title_col)
-        header.addStretch()
-        back = QPushButton("Back to Overview")
-        back.clicked.connect(lambda: self.navigation.navigate_to("home"))
-        back.setCursor(Qt.CursorShape.PointingHandCursor)
-        back.setStyleSheet(f"""
-            QPushButton {{
-                background-color: #ffffff;
-                border: 1px solid #b8c2cc;
-                border-radius: 6px;
-                color: {config.TEXT_PRIMARY};
-                font-weight: 800;
-                padding: 8px 14px;
-            }}
-            QPushButton:hover {{
-                background-color: #edf4fb;
-            }}
-        """)
-        header.addWidget(back)
-        root.addLayout(header)
-
-        grid = QGridLayout()
-        grid.setSpacing(10)
-
         trend = CardFrame("24 h Trend Analysis")
         period = QLabel("Last 24 hours")
         period.setAlignment(Qt.AlignmentFlag.AlignRight)
@@ -485,8 +441,9 @@ class AnalyticsScreen(BaseScreen):
         trend.layout.insertWidget(1, period)
         trend.layout.addWidget(TrendChartWidget(), 1)
 
-        energy = CardFrame("Energy Balance")
-        energy.layout.addWidget(EnergyBalanceWidget(), 1)
+        energy = CardFrame(compact=True)
+        energy.setMinimumHeight(280)
+        energy.layout.addWidget(EnergyBalanceImage(ENERGY_BALANCE_IMAGE), 1)
 
         losses = CardFrame("Production Loss Analysis")
         losses.layout.addWidget(ProductionLossWidget(), 1)
@@ -497,17 +454,21 @@ class AnalyticsScreen(BaseScreen):
         forecast = CardFrame("Forecast & Efficiency")
         forecast.layout.addWidget(ForecastEfficiencyWidget(), 1)
 
-        grid.addWidget(trend, 0, 0, 2, 2)
-        grid.addWidget(energy, 0, 2, 1, 1)
-        grid.addWidget(losses, 1, 2, 1, 1)
-        grid.addWidget(health, 2, 0, 1, 2)
-        grid.addWidget(forecast, 2, 2, 1, 1)
-        grid.setColumnStretch(0, 3)
-        grid.setColumnStretch(1, 3)
-        grid.setColumnStretch(2, 4)
-        grid.setRowStretch(0, 3)
-        grid.setRowStretch(1, 2)
-        grid.setRowStretch(2, 3)
-        root.addLayout(grid, 1)
+        top = QHBoxLayout()
+        top.setSpacing(12)
+        right_column = QVBoxLayout()
+        right_column.setSpacing(12)
+        right_column.addWidget(energy, 5)
+        right_column.addWidget(losses, 2)
+        top.addWidget(trend, 5)
+        top.addLayout(right_column, 3)
+
+        bottom = QHBoxLayout()
+        bottom.setSpacing(12)
+        bottom.addWidget(health, 5)
+        bottom.addWidget(forecast, 3)
+
+        root.addLayout(top, 6)
+        root.addLayout(bottom, 2)
 
         self.layout.addWidget(container, 1)

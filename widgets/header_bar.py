@@ -52,7 +52,7 @@ class HeaderBar(QWidget):
         layout.addWidget(self.datetime_label)
 
         # === System Status ===
-        self.status_label = QLabel("Plant: Stopped")
+        self.status_label = QLabel("Plant: Running")
         self.status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
         self.status_label.setMinimumWidth(180)
         self.status_label.setStyleSheet("""
